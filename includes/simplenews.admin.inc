@@ -566,7 +566,6 @@ function simplenews_admin_category_form($form, &$form_state, $edit = array()) {
     '#maxlength' => 128,
     '#default_value' => $edit['from_name'],
   );
-
   // Email from address
   $form['simplenews_sender_information']['from_address'] = array(
     '#type' => 'textfield',
@@ -574,7 +573,7 @@ function simplenews_admin_category_form($form, &$form_state, $edit = array()) {
     '#size' => 60,
     '#maxlength' => 128,
     '#required' => TRUE,
-    '#default_value' => $edit['from_email_address'],
+    '#default_value' => $edit['from_address'],
   );
 
   // Email subject
