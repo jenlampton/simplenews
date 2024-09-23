@@ -662,11 +662,22 @@ function simplenews_admin_category_form_submit($form, &$form_state) {
 
   $category = (object) $form_state['values'];
 
+  // Make sure the default newsletter vocabulary exists.
+  $vocabulary = taxonomy_vocabulary_load('newsletter');
+  if (empty($vocabulary)) {
+    $vocabulary = new TaxonomyVocabulary();
+    $vocabulary->name = 'Newsletter';
+    $vocabulary->machine_name = "newsletter";
+    $vocabulary->description = t('Simplenews newsletter categories.');
+    $vocabulary->module = 'taxonomy';
+    taxonomy_vocabulary_save($vocabulary);
+  }
+
   // Add a term to the vocabulary.
   $term = entity_create('taxonomy_term', array(
     'name' => $form_state['values']['name'],
     'description' => $form_state['values']['description'],
-    'vocabulary' => taxonomy_vocabulary_machine_name_load('newsletter')->machine_name,
+    'vocabulary' => taxonomy_vocabulary_load('newsletter')->machine_name,
     'weight' => $form_state['values']['weight'],
     'tid' => $form_state['values']['tid'],
   ));
@@ -2071,6 +2082,6 @@ function simplenews_node_tab_send_form_submit($form, &$form_state) {
     backdrop_set_message(t('The newsletter will be sent when the content is published.'));
   }
   // Clear the node cache for this node so that the status shows correctly when
-  // loaded. 
+  // loaded.
   cache_clear_all($node->nid, 'cache_entity_node');
 }
