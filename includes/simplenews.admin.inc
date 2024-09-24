@@ -424,6 +424,7 @@ function theme_simplenews_admin_categories($variables) {
  */
 function simplenews_admin_category_form($form, &$form_state, $edit = array()) {
   $config = config('simplenews.settings');
+
   if (!is_array($edit)) {
     $edit = (array) $edit;
   }
@@ -440,7 +441,7 @@ function simplenews_admin_category_form($form, &$form_state, $edit = array()) {
     'priority' => $config->get('simplenews_priority'),
     'receipt' => $config->get('simplenews_receipt'),
     'from_name' => $config->get('simplenews_from_name'),
-    'from_email_address' => $config->get('simplenews_from_address'),
+    'from_address' => $config->get('simplenews_from_address'),
     'email_subject' => '[[simplenews-category:name]] [node:title]',
     'hyperlinks' => 1,
   );
@@ -489,7 +490,7 @@ function simplenews_admin_category_form($form, &$form_state, $edit = array()) {
     '#title' => t('Subscribe new account'),
     '#options' => $options,
     '#default_value' => $edit['new_account'],
-    '#description' => t('None: This newsletter is not listed on the user registration page.<br />Default on: This newsletter is listed on the user registion page and is selected by default.<br />Default off: This newsletter is listed on the user registion page and is not selected by default.<br />Silent: A new user is automatically subscribed to this newsletter. The newsletter is not listed on the user registration page.'),
+    '#description' => t('None: This newsletter is not listed on the user registration page.<br />Default on: This newsletter is listed on the user registration page and is selected by default.<br />Default off: This newsletter is listed on the user registration page and is not selected by default.<br />Silent: A new user is automatically subscribed to this newsletter. The newsletter is not listed on the user registration page.'),
   );
 
   // Type of (un)subsribe confirmation
