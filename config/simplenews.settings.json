@@ -13,7 +13,7 @@
     "simplenews_source": "SimplenewsSourceNode",
     "simplenews_private_key": false,
     "simplenews_category_field": "field_simplenews_term",
-    "simplenews_block_message_multiple": "Select the newsletter(s) to which you want to subscribe or unsubscribe.",
+    "simplenews_block_message_multiple": "Select the newsletters you want to subscribe to.",
     "simplenews_block_message": "Stay informed on our latest news!",
     "simplenews_block_interface": 1,
     "simplenews_block_link": true,

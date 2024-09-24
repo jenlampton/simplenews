@@ -314,7 +314,7 @@ function simplenews_subscriptions_page_form($form, &$form_state, $code = NULL) {
   }
   else {
     $form['subscriptions']['#title'] = t('Manage your newsletter subscriptions');
-    $form['subscriptions']['#description'] = t('Select the newsletter(s) to which you want to subscribe or unsubscribe.');
+    $form['subscriptions']['#description'] = t('Select the newsletters you want to subscribe to.');
     $form['subscriptions']['mail'] = array(
       '#type' => 'textfield',
       '#title' => t('E-mail'),
