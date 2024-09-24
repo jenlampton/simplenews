@@ -9,7 +9,7 @@ Requirements
 ------------
 
  * For large mailing lists, cron is required.
- * HTML-format newsletters and/or newsletters with file attachments require the mime mail or HMTL mail module.
+ * HTML-format newsletters and/or newsletters with file attachments require the mime mail or HTML mail module.
  * When sending newsletters on regular cron (cron.php), it is important that the base url (settings.php, variable $base_url) is set correctly or links inside the newsletter will not work.
  * Additionally when using Drush to start cron, it is important to use the argument --uri=http://www.example.com
 
@@ -27,7 +27,7 @@ Configuration
 
 * Add or edit newsletter categories on Configuration > Web services > Newsletter (`/admin/config/services/simplenews`).
 
-* By default Simplenews creates a new `Simplenews newsletter` content type, however you can enable any other content type to use as a newsletter on Structure > ccontent type > Configure > Publishing settings > Use as simplenews newsletter.
+* By default Simplenews creates a new `Simplenews newsletter` content type, however you can enable any other content type to use as a newsletter on Structure > Content types > content type> Configure > Publishing settings > Use as simplenews newsletter.
 
 * To enable Simplenews subscription blocks go to Structure > Layouts and choose a layout. Most probably you want to place subscription blocks on Home page or Default layouts. Choose a layout region where you want to place a Simplenews block, click on "Add block" and choose one of `Newsletter: your website newsletter` or `Newsletter: Multi Subscription`.
 
@@ -101,7 +101,7 @@ Related modules
 
 Known-issues
 ------------
-As discussed on https://github.com/backdrop-contrib/simplenews/issues/16#issuecomment-1364366461 there is no currently an upgrade path from Drupal 7. 
+As discussed on https://github.com/backdrop-contrib/simplenews/issues/16#issuecomment-1364366461 there is no currently an upgrade path from Drupal 7.
 
 
 Credits
@@ -118,6 +118,6 @@ AlexisWilke https://www.drupal.org/u/alexiswilke
 Current maintainers
 -------------------
 
-Simplenews is ported and supported by Backdrop Afficionados at AltaGrade (https://www.altagrade.com):
+Simplenews is ported and supported by Backdrop Professionals at AltaGrade (https://www.altagrade.com):
 
 * Alan Mels (https://github.com/alanmels)

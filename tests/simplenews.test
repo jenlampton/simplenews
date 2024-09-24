@@ -23,8 +23,8 @@ class SimplenewsTestCase extends BackdropWebTestCase {
     $modules = array_merge(array('taxonomy', 'simplenews'), $modules);
     parent::setUp($modules);
 
-    //$this->simplenews_admin_user = $this->drupalCreateUser(array('administer newsletters', 'administer simplenews settings', 'administer simplenews subscriptions'));
-    //$this->sender_user = $this->drupalCreateUser(array('create simplenews content', 'edit own simplenews content', 'send newsletter'));
+    //$this->simplenews_admin_user = $this->backdropCreateUser(array('administer newsletters', 'administer simplenews settings', 'administer simplenews subscriptions'));
+    //$this->sender_user = $this->backdropCreateUser(array('create simplenews content', 'edit own simplenews content', 'send newsletter'));
 
     variable_set('site_mail', 'user@example.com');
     $this->mailadress_cache = array();
@@ -73,7 +73,7 @@ class SimplenewsTestCase extends BackdropWebTestCase {
   function randomEmail($number = 4, $prefix = 'simpletest_', $domain = 'example.com') {
     $mail = '';
     do {
-      $mail = drupal_strtolower($this->randomName($number, $prefix) . '@' . $domain);
+      $mail = backdrop_strtolower($this->randomName($number, $prefix) . '@' . $domain);
     } while (in_array($mail, $this->mailadress_cache));
     $this->mailadress_cache[] = $mail;
     return $mail;
@@ -161,7 +161,7 @@ class SimplenewsTestCase extends BackdropWebTestCase {
       $this->subscribers[$mail] = $mail;
     }
 
-    $this->drupalGet('admin/people/simplenews');
+    $this->backdropGet('admin/people/simplenews');
     $this->clickLink(t('Mass subscribe'));
     $edit = array(
       'emails' => implode(',', $this->subscribers),
@@ -201,11 +201,11 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
    * Subscribe to multiple newsletters at the same time.
    */
   function testSubscribeMultiple() {
-    $admin_user = $this->drupalCreateUser(array('administer blocks', 'administer content types', 'administer nodes', 'access administration pages', 'administer permissions', 'administer newsletters'));
-    $this->drupalLogin($admin_user);
+    $admin_user = $this->backdropCreateUser(array('administer blocks', 'administer content types', 'administer nodes', 'access administration pages', 'administer permissions', 'administer newsletters'));
+    $this->backdropLogin($admin_user);
     $this->setAnonymousUserSubscription(TRUE);
 
-    $this->drupalGet('admin/config/services/simplenews');
+    $this->backdropGet('admin/config/services/simplenews');
     for ($i = 0; $i < 5; $i++) {
       $this->clickLink(t('Add newsletter category'));
       $edit = array(
@@ -216,10 +216,10 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
       $this->backdropPost(NULL, $edit, t('Save'));
     }
 
-    drupal_static_reset('simplenews_categories_load_multiple');
+    backdrop_static_reset('simplenews_categories_load_multiple');
     $categories = simplenews_categories_load_multiple();
 
-    $this->drupalLogout();
+    $this->backdropLogout();
 
     $enable = array_rand($categories, 3);
 
@@ -233,7 +233,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->backdropPost('newsletter/subscriptions', $edit, t('Subscribe'));
     $this->assertText(t('You will receive a confirmation e-mail shortly containing further instructions on how to complete your subscription.'), t('Subscription confirmation e-mail sent.'));
 
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[0]['body'];
 
     // Verify listed changes.
@@ -252,7 +252,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $confirm_url = $match[0];
     $this->assertTrue($found, t('Confirmation URL found: @url', array('@url' => $confirm_url)));
 
-    $this->drupalGet($confirm_url);
+    $this->backdropGet($confirm_url);
     $this->assertRaw(t('Are you sure you want to confirm the following subscription changes for %user?', array('%user' => simplenews_mask_mail($mail))), t('Subscription confirmation found.'));
 
     // Verify listed changes.
@@ -283,7 +283,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $subscriber = simplenews_subscriber_load_by_mail($mail);
     $hash = simplenews_generate_hash($subscriber->mail, $subscriber->snid, $tid);
     $this->backdropPost('newsletter/subscriptions/' . $hash, array(), t('Update'));
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[1]['body'];
 
     $this->assertTrue(strpos($body, 'No confirmation necessary'));
@@ -303,7 +303,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->backdropPost('newsletter/subscriptions', $edit, t('Unsubscribe'));
     $this->assertText(t('You will receive a confirmation e-mail shortly containing further instructions on how to cancel your subscription.'), t('Subscription confirmation e-mail sent.'));
 
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[2]['body'];
 
     // Verify listed changes.
@@ -322,7 +322,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $confirm_url = $match[0];
     $this->assertTrue($found, t('Confirmation URL found: @url', array('@url' => $confirm_url)));
 
-    $this->drupalGet($confirm_url);
+    $this->backdropGet($confirm_url);
     $this->assertRaw(t('Are you sure you want to confirm the following subscription changes for %user?', array('%user' => simplenews_mask_mail($mail))), t('Subscription confirmation found.'));
 
     // Verify listed changes.
@@ -339,7 +339,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->assertRaw(t('Subscription changes confirmed for %user.', array('%user' => $mail)), t('Anonymous subscriber added to newsletter'));
 
     // Verify subscription changes.
-    drupal_static_reset('simplenews_user_is_subscribed');
+    backdrop_static_reset('simplenews_user_is_subscribed');
     $still_enabled = array_diff($enable, $disable);
     foreach ($categories as $tid => $category) {
       $is_subscribed = simplenews_user_is_subscribed($mail, $tid);
@@ -358,7 +358,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
       'newsletters[' . $tid . ']' => TRUE,
     );
     $this->backdropPost('newsletter/subscriptions', $edit, t('Subscribe'));
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[3]['body'];
 
     $pattern = '@newsletter/confirm/add/[0-9,a-f]+t[0-9]+@';
@@ -373,7 +373,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
       'newsletters[' . $tid . ']' => TRUE,
     );
     $this->backdropPost('newsletter/subscriptions', $edit, t('Subscribe'));
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[4]['body'];
 
     $pattern = '@newsletter/confirm/combined/[0-9,a-f]+t0@';
@@ -391,7 +391,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     }
     $this->backdropPost('newsletter/subscriptions', $edit, t('Subscribe'));
     $this->assertText(t('You will receive a confirmation e-mail shortly containing further instructions on how to complete your subscription.'), t('Subscription confirmation e-mail sent.'));
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     foreach (array(5, 6) as $id) {
       $body = $mails[$id]['body'];
 
@@ -412,7 +412,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->backdropPost('newsletter/subscriptions', $edit, t('Unsubscribe'));
     $this->assertText(t('You will receive a confirmation e-mail shortly containing further instructions on how to cancel your subscription.'));
 
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[7]['body'];
 
     $pattern = '@newsletter/confirm/combined/[0-9,a-f]+t0@';
@@ -420,23 +420,23 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $confirm_url = $match[0];
     $this->assertTrue($found, t('Confirmation URL found: @url', array('@url' => $confirm_url)));
 
-    $this->drupalGet($confirm_url . '/ok');
+    $this->backdropGet($confirm_url . '/ok');
     $this->assertRaw(t('Subscription changes confirmed for %user.', array('%user' => $mail)), t('Confirmation message displayed.'));
 
     // Verify subscription changes.
-    drupal_static_reset('simplenews_user_is_subscribed');
+    backdrop_static_reset('simplenews_user_is_subscribed');
     foreach (array_keys($categories) as $tid) {
       $this->assertFalse(simplenews_user_is_subscribed($mail, $tid));
     }
 
     // Call confirmation url after it is allready used.
     // Using direct url.
-    $this->drupalGet($confirm_url . '/ok');
+    $this->backdropGet($confirm_url . '/ok');
     $this->assertNoResponse(404, 'Redirected after calling confirmation url more than once.');
     $this->assertRaw(t('All changes to your subscriptions where already applied. No changes made.'));
 
     // Using confirmation page.
-    $this->drupalGet($confirm_url);
+    $this->backdropGet($confirm_url);
     $this->assertNoResponse(404, 'Redirected after calling confirmation url more than once.');
     $this->assertRaw(t('All changes to your subscriptions where already applied. No changes made.'));
   }
@@ -456,8 +456,8 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     // Set permission for anonymous to subscribe
     // Enable newsletter block
     // Logout admin
-    $admin_user = $this->drupalCreateUser(array('administer blocks', 'administer content types', 'administer nodes', 'access administration pages', 'administer permissions'));
-    $this->drupalLogin($admin_user);
+    $admin_user = $this->backdropCreateUser(array('administer blocks', 'administer content types', 'administer nodes', 'access administration pages', 'administer permissions'));
+    $this->backdropLogin($admin_user);
     $this->setAnonymousUserSubscription(TRUE);
 
     // Setup subscription block with subscription form.
@@ -471,9 +471,9 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $tid = $this->getRandomNewsletter();
     $this->setupSubscriptionBlock($tid, $block_settings);
 
-    $this->drupalLogout();
+    $this->backdropLogout();
 
-    //file_put_contents('output.html', $this->drupalGetContent());
+    //file_put_contents('output.html', $this->backdropGetContent());
     // 1. Subscribe anonymous via block
     // Subscribe + submit
     // Assert confirmation message
@@ -494,7 +494,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $subscription = db_query('SELECT * FROM {simplenews_subscription} WHERE snid = :snid AND tid = :tid', array(':snid' => $subscriber->snid, ':tid' => $tid))->fetchObject();
     $this->assertEqual(SIMPLENEWS_SUBSCRIPTION_STATUS_UNCONFIRMED, $subscription->status, t('Subscription is unconfirmed'));
 
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[0]['body'];
 
     $pattern = '@newsletter/confirm/add/[0-9,a-f]+t[0-9]+@';
@@ -503,7 +503,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $confirm_url = $match[0];
     $this->assertTrue($found, t('Confirmation URL found: @url', array('@url' => $confirm_url)));
 
-    $this->drupalGet($confirm_url);
+    $this->backdropGet($confirm_url);
     $newsletter = taxonomy_term_load($tid);
     $this->assertRaw(t('Are you sure you want to add %user to the %newsletter mailing list?', array('%user' => simplenews_mask_mail($mail), '%newsletter' => $newsletter->name)), t('Subscription confirmation found.'));
 
@@ -533,7 +533,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->assertEqual($subscriber->uid, $account->uid);
     $this->assertEqual($account->name, $edit['name']);
 
-    $this->drupalLogout();
+    $this->backdropLogout();
 
     // 2. Subscribe anonymous via subscription page
     // Subscribe + submit
@@ -552,7 +552,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->backdropPost('newsletter/subscriptions', $edit, t('Subscribe'));
     $this->assertText(t('You will receive a confirmation e-mail shortly containing further instructions on how to complete your subscription.'), t('Subscription confirmation e-mail sent.'));
 
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[2]['body'];
     $pattern = '@newsletter/confirm/add/[0-9,a-f]+t[0-9]+@';
     preg_match($pattern, $body, $match);
@@ -560,7 +560,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $confirm_url = $match[0];
     $this->assertTrue($found, t('Confirmation URL found: @url', array('@url' => $confirm_url)));
 
-    $this->drupalGet($confirm_url);
+    $this->backdropGet($confirm_url);
     $newsletter = taxonomy_term_load($tid);
     $this->assertRaw(t('Are you sure you want to add %user to the %newsletter mailing list?', array('%user' => simplenews_mask_mail($mail), '%newsletter' => $newsletter->name)), t('Subscription confirmation found.'));
 
@@ -569,7 +569,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
 
     // 3. Subscribe anonymous via multi block
 
-    $this->drupalLogin($admin_user);
+    $this->backdropLogin($admin_user);
 
     // Enable the multi-sign up block.
     $this->setupSubscriptionBlock(0);
@@ -580,7 +580,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     );
     $this->backdropPost(NULL, $edit, t('Save blocks'));
 
-    $this->drupalLogout();
+    $this->backdropLogout();
 
     // Try to submit multi-signup form without selecting a category.
     $mail = $this->randomEmail(8, 'testmail');
@@ -597,7 +597,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->backdropPost(NULL, $edit, t('Subscribe'));
     $this->assertText(t('You will receive a confirmation e-mail shortly containing further instructions on how to complete your subscription.'));
 
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[3]['body'];
     $pattern = '@newsletter/confirm/add/[0-9,a-f]+t[0-9]+@';
     preg_match($pattern, $body, $match);
@@ -605,7 +605,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $confirm_url = $match[0];
     $this->assertTrue($found, t('Confirmation URL found: @url', array('@url' => $confirm_url)));
 
-    $this->drupalGet($confirm_url);
+    $this->backdropGet($confirm_url);
     $newsletter = taxonomy_term_load($tid);
     $this->assertRaw(t('Are you sure you want to add %user to the %newsletter mailing list?', array('%user' => simplenews_mask_mail($mail), '%newsletter' => $newsletter->name)), t('Subscription confirmation found.'));
 
@@ -638,14 +638,14 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->backdropPost(NULL, $edit, t('Subscribe'));
     $this->assertText(t('You will receive a confirmation e-mail shortly containing further instructions on how to complete your subscription.'));
 
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[5]['body'];
     $pattern = '@newsletter/confirm/add/[0-9,a-f]+t[0-9]+@';
     $found = preg_match($pattern, $body, $match);
     $confirm_url = $match[0];
     $this->assertTrue($found, t('Confirmation URL found: @url', array('@url' => $confirm_url)));
 
-    $this->drupalGet($confirm_url);
+    $this->backdropGet($confirm_url);
     $newsletter = taxonomy_term_load($tid);
     $this->assertRaw(t('Are you sure you want to add %user to the %newsletter mailing list?', array('%user' => simplenews_mask_mail($mail), '%newsletter' => $newsletter->name)), t('Subscription confirmation found.'));
 
@@ -665,7 +665,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     );
     $this->backdropPost(NULL, $edit, t('Unsubscribe'));
     $this->assertText(t('You will receive a confirmation e-mail shortly containing further instructions on how to cancel your subscription.'));
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[6]['body'];
     $this->assertTrue(strpos($body, t('We have received a request to remove the @mail', array('@mail' => $mail))) === 0);
 
@@ -674,7 +674,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $confirm_url = $match[0];
     $this->assertTrue($found, t('Confirmation URL found: @url', array('@url' => $confirm_url)));
 
-    $this->drupalGet($confirm_url);
+    $this->backdropGet($confirm_url);
     $newsletter = taxonomy_term_load($tid);
     $this->assertRaw(t('Are you sure you want to remove %user from the %newsletter mailing list?', array('%user' => simplenews_mask_mail($mail), '%newsletter' => $newsletter->name)), t('Subscription confirmation found.'));
 
@@ -685,7 +685,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $subscriber = simplenews_subscriber_load_by_mail($mail);
 
     $hash = simplenews_generate_hash($subscriber->mail, $subscriber->snid, $tid);
-    $this->drupalGet('newsletter/subscriptions/' . $hash);
+    $this->backdropGet('newsletter/subscriptions/' . $hash);
     $this->assertText(t('Subscriptions for @mail', array('@mail' => $mail)));
 
     $edit = array(
@@ -699,14 +699,14 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->assertTrue(empty($subscriber->tids));
     $this->assertEqual(SIMPLENEWS_SUBSCRIPTION_STATUS_UNCONFIRMED, $subscriber->newsletter_subscription[$tid]->status);
 
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[7]['body'];
     $pattern = '@newsletter/confirm/add/[0-9,a-f]+t[0-9]+@';
     $found = preg_match($pattern, $body, $match);
     $confirm_url = $match[0];
     $this->assertTrue($found, t('Confirmation URL found: @url', array('@url' => $confirm_url)));
 
-    $this->drupalGet($confirm_url);
+    $this->backdropGet($confirm_url);
     $newsletter = taxonomy_term_load($tid);
     $this->assertRaw(t('Are you sure you want to add %user to the %newsletter mailing list?', array('%user' => simplenews_mask_mail($mail), '%newsletter' => $newsletter->name)), t('Subscription confirmation found.'));
 
@@ -720,11 +720,11 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->assertEqual(SIMPLENEWS_SUBSCRIPTION_STATUS_SUBSCRIBED, $subscriber->newsletter_subscription[$tid]->status);
 
     // Attemt to fetch the page using an invalid hash format.
-    $this->drupalGet('newsletter/subscriptions/' . strrev($hash));
+    $this->backdropGet('newsletter/subscriptions/' . strrev($hash));
     $this->assertResponse(404);
 
     // Attemt to fetch the page using a wrong hash but correct format.
-    $this->drupalGet('newsletter/subscriptions/' . simplenews_generate_hash($subscriber->mail . 'a', $subscriber->snid, $tid));
+    $this->backdropGet('newsletter/subscriptions/' . simplenews_generate_hash($subscriber->mail . 'a', $subscriber->snid, $tid));
     $this->assertResponse(404);
 
     // Attempt to unsubscribe a non-existing subscriber.
@@ -735,7 +735,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     );
     $this->backdropPost('newsletter/subscriptions', $edit, t('Unsubscribe'));
     $this->assertText(t('You will receive a confirmation e-mail shortly containing further instructions on how to cancel your subscription.'));
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $body = $mails[8]['body'];
     // Remove line breaks from body in case the string is split.
     $body = str_replace("\n", ' ', $body);
@@ -757,8 +757,8 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     // Set permission for anonymous to subscribe
     // Enable newsletter block
     // Logout admin
-    $admin_user = $this->drupalCreateUser(array('administer blocks', 'administer content types', 'administer nodes', 'access administration pages', 'administer permissions', 'administer newsletters'));
-    $this->drupalLogin($admin_user);
+    $admin_user = $this->backdropCreateUser(array('administer blocks', 'administer content types', 'administer nodes', 'access administration pages', 'administer permissions', 'administer newsletters'));
+    $this->backdropLogin($admin_user);
     $this->setAnonymousUserSubscription(TRUE);
 
     // Setup subscription block with subscription form.
@@ -770,7 +770,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
       'rss feed' => TRUE,
     );
 
-    $this->drupalGet('admin/config/services/simplenews');
+    $this->backdropGet('admin/config/services/simplenews');
     $this->clickLink(t('Add newsletter category'));
     $edit = array(
       'name' => $this->randomName(),
@@ -783,7 +783,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $tid = 2;
     $this->setupSubscriptionBlock($tid, $block_settings);
 
-    $this->drupalLogout();
+    $this->backdropLogout();
 
     // 1. Subscribe anonymous via block
     // Subscribe + submit
@@ -831,8 +831,8 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     // Logout admin
     // Login Subscriber
 
-    $admin_user = $this->drupalCreateUser(array('administer blocks', 'administer content types', 'administer nodes', 'access administration pages', 'administer permissions'));
-    $this->drupalLogin($admin_user);
+    $admin_user = $this->backdropCreateUser(array('administer blocks', 'administer content types', 'administer nodes', 'access administration pages', 'administer permissions'));
+    $this->backdropLogin($admin_user);
     $this->setAnonymousUserSubscription(TRUE);
 
     // Setup subscription block with subscription form.
@@ -845,10 +845,10 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     );
     $tid = $this->getRandomNewsletter();
     $this->setupSubscriptionBlock($tid, $block_settings);
-    $this->drupalLogout();
+    $this->backdropLogout();
 
-    $subscriber_user = $this->drupalCreateUser(array('subscribe to newsletters'));
-    $this->drupalLogin($subscriber_user);
+    $subscriber_user = $this->backdropCreateUser(array('subscribe to newsletters'));
+    $this->backdropLogin($subscriber_user);
 
     // 1. Subscribe authenticated via block
     // Subscribe + submit
@@ -904,7 +904,7 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->assertRaw(t('The changes have been saved.', array('%mail' => $subscriber_user->mail)), t('Authenticated user unsubscribed on the account page.'));
 
     // Subscribe authenticated via multi block
-    $this->drupalLogin($admin_user);
+    $this->backdropLogin($admin_user);
 
     // Enable the multi-sign up block.
     $this->setupSubscriptionBlock(0);
@@ -915,17 +915,17 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     );
     $this->backdropPost(NULL, $edit, t('Save blocks'));
 
-    $this->drupalLogout();
+    $this->backdropLogout();
 
     // Try to submit multi-signup form without selecting a category.
-    $subscriber_user2 = $this->drupalCreateUser(array('subscribe to newsletters'));
-    $this->drupalLogin($subscriber_user2);
+    $subscriber_user2 = $this->backdropCreateUser(array('subscribe to newsletters'));
+    $this->backdropLogin($subscriber_user2);
 
     // Check that the user has only access to his own subscriptions page.
-    $this->drupalGet('user/' . $subscriber_user->uid . '/edit/simplenews');
+    $this->backdropGet('user/' . $subscriber_user->uid . '/edit/simplenews');
     $this->assertResponse(403);
 
-    $this->drupalGet('user/' . $subscriber_user2->uid . '/edit/simplenews');
+    $this->backdropGet('user/' . $subscriber_user2->uid . '/edit/simplenews');
     $this->assertResponse(200);
 
     $this->assertNoField('mail');
@@ -954,8 +954,8 @@ class SimplenewsSubscribeTestCase extends SimplenewsTestCase {
     $this->assertNoFieldChecked('edit-newsletters-' . $tid);
 
     // And now the same for the newsletter/subscriptions page.
-    $subscriber_user3 = $this->drupalCreateUser(array('subscribe to newsletters'));
-    $this->drupalLogin($subscriber_user3);
+    $subscriber_user3 = $this->backdropCreateUser(array('subscribe to newsletters'));
+    $this->backdropLogin($subscriber_user3);
 
     $this->assertNoField('mail');
     $this->backdropPost('newsletter/subscriptions', array(), t('Update'));
@@ -1021,7 +1021,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     // Allow authenticated users to subscribe.
     $this->setAuthenticatedUserSubscription(TRUE);
 
-    $admin_user = $this->drupalCreateUser(array(
+    $admin_user = $this->backdropCreateUser(array(
       'administer blocks',
       'administer content types',
       'administer nodes',
@@ -1032,9 +1032,9 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
       'create simplenews content',
       'send newsletter',
       ));
-    $this->drupalLogin($admin_user);
+    $this->backdropLogin($admin_user);
 
-    $this->drupalGet('admin/config/services/simplenews');
+    $this->backdropGet('admin/config/services/simplenews');
 
     // Create a category for all possible setting combinations.
     $new_account = array('none', 'off', 'on', 'silent');
@@ -1061,11 +1061,11 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
       }
     }
 
-    drupal_static_reset('simplenews_categories_load_multiple');
+    backdrop_static_reset('simplenews_categories_load_multiple');
     $categories = simplenews_categories_load_multiple();
 
     // Check block settings.
-    $this->drupalGet('admin/structure/block');
+    $this->backdropGet('admin/structure/block');
 
     //blocks[simplenews_42][region]
     foreach ($categories as $category) {
@@ -1082,8 +1082,8 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     }
 
     // Check registration form.
-    $this->drupalLogout();
-    $this->drupalGet('user/register');
+    $this->backdropLogout();
+    $this->backdropGet('user/register');
     foreach ($categories as $category) {
       if (strpos($category->name, '-') === FALSE) {
         continue;
@@ -1132,9 +1132,9 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     }
 
     // Log out again.
-    $this->drupalLogout();
+    $this->backdropLogout();
 
-    // Get the user id and do a login through the drupalLogin() function.
+    // Get the user id and do a login through the backdropLogin() function.
     $uid = db_query('SELECT uid FROM {users} WHERE name = :name', array(':name' => $edit['name']))->fetchField();
 
     $user = user_load($uid);
@@ -1142,9 +1142,9 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     $user->pass_raw = $edit['pass[pass1]'];
 
     // Verify newsletter subscription pages.
-    $this->drupalLogin($user);
+    $this->backdropLogin($user);
     foreach (array('newsletter/subscriptions', 'user/' . $user->uid . '/edit/simplenews') as $path) {
-      $this->drupalGet($path);
+      $this->backdropGet($path);
       foreach ($categories as $category) {
         if (strpos($category->name, '-') === FALSE) {
           continue;
@@ -1179,7 +1179,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
       }
     }
 
-    $this->drupalLogin($admin_user);
+    $this->backdropLogin($admin_user);
 
     $this->setupSubscriptionBlock($edit_category->tid, $settings = array(
       'issue count' => 2,
@@ -1192,7 +1192,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     for ($index = 0; $index < 3; $index++) {
       $name = $this->randomName();
       $generated_names[] = $name;
-      $this->drupalGet('node/add/simplenews');
+      $this->backdropGet('node/add/simplenews');
       $edit = array(
         'title' => $name,
         'field_simplenews_term[und]' => $edit_category->tid,
@@ -1204,7 +1204,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     }
 
     // Display the two recent issues.
-    $this->drupalGet('');
+    $this->backdropGet('');
     $this->assertText(t('Previous issues'), 'Should display recent issues.');
 
     $displayed_issues = $this->xpath("//div[@class='issues-list']/div/ul/li/a");
@@ -1215,7 +1215,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     $this->assertTrue(in_array($generated_names[1], $displayed_issues));
     $this->assertTrue(in_array($generated_names[2], $displayed_issues));
 
-    $this->drupalGet('admin/config/services/simplenews/categories/' . $edit_category->tid . '/edit');
+    $this->backdropGet('admin/config/services/simplenews/categories/' . $edit_category->tid . '/edit');
     $this->assertFieldByName('name', $edit_category->name, t('Category name is displayed when editing'));
     $this->assertFieldByName('description', $edit_category->description, t('Category description is displayed when editing'));
 
@@ -1225,11 +1225,11 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     $updated_category = simplenews_category_load($edit_category->tid);
     $this->assertEqual(0, $updated_category->block, t('Block for category disabled'));
 
-    $this->drupalGet('admin/structure/block');
+    $this->backdropGet('admin/structure/block');
     $this->assertNoText($edit_category->name, t('Category block was removed'));
 
     // Delete a category.
-    $this->drupalGet('admin/config/services/simplenews/categories/' . $edit_category->tid . '/edit');
+    $this->backdropGet('admin/config/services/simplenews/categories/' . $edit_category->tid . '/edit');
     $edit = array();
     $this->backdropPost(NULL, $edit, t('Delete'));
     $this->backdropPost(NULL, $edit, t('Delete'));
@@ -1246,8 +1246,8 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
    *
    */
   function testSubscriptionManagement() {
-    $admin_user = $this->drupalCreateUser(array('administer newsletters', 'administer simplenews settings', 'administer simplenews subscriptions', 'administer taxonomy'));
-    $this->drupalLogin($admin_user);
+    $admin_user = $this->backdropCreateUser(array('administer newsletters', 'administer simplenews settings', 'administer simplenews subscriptions', 'administer taxonomy'));
+    $this->backdropLogin($admin_user);
 
     // Create a second category.
     $edit = array(
@@ -1258,7 +1258,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     // Add a number of users to each category separately and then add another
     // bunch to both.
     $subscribers = array();
-    drupal_static_reset('simplenews_categories_load_multiple');
+    backdrop_static_reset('simplenews_categories_load_multiple');
     $categories = simplenews_categories_load_multiple();
 
     $groups = array();
@@ -1277,7 +1277,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     }
 
     // Create a user and assign him one of the mail addresses of the all group.
-    $user = $this->drupalCreateUser(array('subscribe to newsletters'));
+    $user = $this->backdropCreateUser(array('subscribe to newsletters'));
     // Make sure that user_save() does not update the user object, as it will
     // override the pass_raw property which we'll need to log this user in
     // later on.
@@ -1286,7 +1286,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
 
     $delimiters = array(',', ' ', "\n");
 
-    $this->drupalGet('admin/people/simplenews');
+    $this->backdropGet('admin/people/simplenews');
     $i = 0;
     foreach ($groups as $key => $group) {
       $this->clickLink(t('Mass subscribe'));
@@ -1338,7 +1338,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
 
     // Filter a single mail address, the one assigned to a user.
     $edit = array(
-      'email' => drupal_substr(current($subscribers['all']), 0, 4)
+      'email' => backdrop_substr(current($subscribers['all']), 0, 4)
     );
     $this->backdropPost(NULL, $edit, t('Filter'));
 
@@ -1365,7 +1365,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     // The all mail is still displayed because it's still subscribed to the
     // second category. Reload the page to get rid of the confirmation
     // message.
-    $this->drupalGet('admin/people/simplenews');
+    $this->backdropGet('admin/people/simplenews');
     $this->assertNoText($first_mail);
     $this->assertText($all_mail);
 
@@ -1442,10 +1442,10 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     // Block the user.
     user_save(clone $user, array('status' => 0));
 
-    $this->drupalGet('admin/people/simplenews');
+    $this->backdropGet('admin/people/simplenews');
 
     // Verify updated subscriptions count.
-    drupal_static_reset('simplenews_count_subscriptions');
+    backdrop_static_reset('simplenews_count_subscriptions');
     $after_count = simplenews_count_subscriptions($first);
     $this->assertEqual($before_count - 1, $after_count, t('Blocked users are not counted in subscription count.'));
 
@@ -1464,8 +1464,8 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     );
 
     $this->backdropPost('admin/people/simplenews/import', $edit, t('Subscribe'));
-    drupal_static_reset('simplenews_subscriber_load_multiple');
-    drupal_static_reset('simplenews_user_is_subscribed');
+    backdrop_static_reset('simplenews_subscriber_load_multiple');
+    backdrop_static_reset('simplenews_user_is_subscribed');
     $this->assertFalse(simplenews_user_is_subscribed($tested_subscribers[0], $first, t('Subscriber not resubscribed through mass subscription.')));
     $this->assertFalse(simplenews_user_is_subscribed($tested_subscribers[1], $first, t('Subscriber not resubscribed through mass subscription.')));
     $this->assertTrue(simplenews_user_is_subscribed($tested_subscribers[2], $first, t('Subscriber subscribed through mass subscription.')));
@@ -1484,8 +1484,8 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     );
 
     $this->backdropPost('admin/people/simplenews/import', $edit, t('Subscribe'));
-    drupal_static_reset('simplenews_subscriber_load_multiple');
-    drupal_static_reset('simplenews_user_is_subscribed');
+    backdrop_static_reset('simplenews_subscriber_load_multiple');
+    backdrop_static_reset('simplenews_user_is_subscribed');
     $this->assertTrue(simplenews_user_is_subscribed($tested_subscribers[0], $first, t('Subscriber resubscribed trough mass subscription.')));
     $this->assertTrue(simplenews_user_is_subscribed($tested_subscribers[1], $first, t('Subscriber resubscribed trough mass subscription.')));
     $this->assertTrue(simplenews_user_is_subscribed($tested_subscribers[2], $first, t('Subscriber subscribed trough mass subscription.')));
@@ -1504,7 +1504,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
 
 
     // Verify that all subscriptions of that category have been removed.
-    $this->drupalGet('admin/people/simplenews');
+    $this->backdropGet('admin/people/simplenews');
     foreach ($subscribers[$first] as $mail) {
       $this->assertNoText($mail);
     }
@@ -1525,31 +1525,31 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
       'activated' => FALSE,
     );
     $this->backdropPost(NULL, $edit, t('Update'));
-    drupal_static_reset('simplenews_subscriber_load_multiple');
-    drupal_static_reset('simplenews_user_is_subscribed');
+    backdrop_static_reset('simplenews_subscriber_load_multiple');
+    backdrop_static_reset('simplenews_user_is_subscribed');
     $this->assertFalse(simplenews_user_is_subscribed($subscriber->mail, $this->getRandomNewsletter(), t('Subscriber is not active')));
 
     // Re-enable account.
-    $this->drupalGet('admin/people/simplenews/users/edit/' . $subscriber->snid);
+    $this->backdropGet('admin/people/simplenews/users/edit/' . $subscriber->snid);
     $this->assertText(t('Subscriptions for @mail', array('@mail' => $subscriber->mail)));
     $this->assertNoFieldChecked('edit-activated--2');
     $edit = array(
       'activated' => TRUE,
     );
     $this->backdropPost(NULL, $edit, t('Update'));
-    drupal_static_reset('simplenews_subscriber_load_multiple');
-    drupal_static_reset('simplenews_user_is_subscribed');
+    backdrop_static_reset('simplenews_subscriber_load_multiple');
+    backdrop_static_reset('simplenews_user_is_subscribed');
     $this->assertTrue(simplenews_user_is_subscribed($subscriber->mail, $this->getRandomNewsletter(), t('Subscriber is active again.')));
 
     // Remove the category.
-    $this->drupalGet('admin/people/simplenews/users/edit/' . $subscriber->snid);
+    $this->backdropGet('admin/people/simplenews/users/edit/' . $subscriber->snid);
     $this->assertText(t('Subscriptions for @mail', array('@mail' => $subscriber->mail)));
     $edit = array(
       'newsletters[' . reset($subscriber->tids) . ']' => FALSE,
     );
     $this->backdropPost(NULL, $edit, t('Update'));
-    drupal_static_reset('simplenews_subscriber_load_multiple');
-    drupal_static_reset('simplenews_user_is_subscribed');
+    backdrop_static_reset('simplenews_subscriber_load_multiple');
+    backdrop_static_reset('simplenews_user_is_subscribed');
     $this->assertFalse(simplenews_user_is_subscribed($subscriber->mail, reset($subscriber->tids), t('Subscriber not subscribed anymore.')));
 
     // @todo Test Admin subscriber edit preferred language $subscription->langcode
@@ -1558,12 +1558,12 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     // and make sure the address is correctly encoded.
     $xss_mail = "<script>alert('XSS');</script>";
     simplenews_subscribe_user($xss_mail, $this->getRandomNewsletter(), FALSE);
-    $this->drupalGet('admin/people/simplenews');
+    $this->backdropGet('admin/people/simplenews');
     $this->assertNoRaw($xss_mail);
     $this->assertRaw(check_plain($xss_mail));
 
     $xss_subscriber = simplenews_subscriber_load_by_mail($xss_mail);
-    $this->drupalGet('admin/people/simplenews/users/edit/' . $xss_subscriber->snid);
+    $this->backdropGet('admin/people/simplenews/users/edit/' . $xss_subscriber->snid);
     $this->assertNoRaw($xss_mail);
     $this->assertRaw(check_plain($xss_mail));
   }
@@ -1572,20 +1572,20 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
    * Test content type configuration.
    */
   function testContentTypes() {
-    $admin_user = $this->drupalCreateUser(array('administer blocks', 'administer content types', 'administer nodes', 'access administration pages', 'administer permissions', 'administer newsletters', 'administer simplenews subscriptions', 'bypass node access', 'send newsletter'));
-    $this->drupalLogin($admin_user);
+    $admin_user = $this->backdropCreateUser(array('administer blocks', 'administer content types', 'administer nodes', 'access administration pages', 'administer permissions', 'administer newsletters', 'administer simplenews subscriptions', 'bypass node access', 'send newsletter'));
+    $this->backdropLogin($admin_user);
 
-    $this->drupalGet('admin/structure/types');
+    $this->backdropGet('admin/structure/types');
     $this->clickLink(t('Add content type'));
     $edit = array(
       'name' => $name = $this->randomName(),
-      'type' => $type = drupal_strtolower($name),
+      'type' => $type = backdrop_strtolower($name),
       'simplenews_content_type' => TRUE,
     );
     $this->backdropPost(NULL, $edit, t('Save content type'));
 
     // Verify that the newsletter settings are shown.
-    $this->drupalGet('node/add/' . $type);
+    $this->backdropGet('node/add/' . $type);
     $this->assertText(t('Newsletter category'));
 
     // Create an issue.
@@ -1599,7 +1599,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
     $this->assertText(t('Send newsletter'));
     $this->backdropPost(NULL, array(), t('Submit'));
 
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual('simplenews_test', $mails[0]['id']);
     // @todo: Test with a custom test mail address.
     $this->assertEqual('user@example.com', $mails[0]['to']);
@@ -1613,7 +1613,7 @@ class SimpleNewsAdministrationTestCase extends SimplenewsTestCase {
 
     // Verify that the newsletter settings are still shown.
     // Note: Previously the field got autoremoved. We leave it remaining due to potential data loss.
-    $this->drupalGet('node/add/' . $type);
+    $this->backdropGet('node/add/' . $type);
     $this->assertNoText(t('Replacement patterns'));
     $this->assertText(t('Newsletter category'));
 
@@ -1646,8 +1646,8 @@ class SimpleNewsI18nTestCase extends SimplenewsTestCase {
    */
   function setUp() {
     parent::setUp(array('locale', 'i18n', 'variable', 'i18n_string', 'i18n_taxonomy', 'translation', 'i18n_translation'));
-    $this->admin_user = $this->drupalCreateUser(array('bypass node access', 'administer nodes', 'administer languages', 'administer content types', 'access administration pages', 'administer filters', 'administer taxonomy', 'translate interface', 'subscribe to newsletters', 'administer site configuration', 'translate content', 'administer simplenews subscriptions', 'send newsletter'));
-    $this->drupalLogin($this->admin_user);
+    $this->admin_user = $this->backdropCreateUser(array('bypass node access', 'administer nodes', 'administer languages', 'administer content types', 'access administration pages', 'administer filters', 'administer taxonomy', 'translate interface', 'subscribe to newsletters', 'administer site configuration', 'translate content', 'administer simplenews subscriptions', 'send newsletter'));
+    $this->backdropLogin($this->admin_user);
     $this->setUpLanguages();
   }
 
@@ -1662,16 +1662,16 @@ class SimpleNewsI18nTestCase extends SimplenewsTestCase {
    */
   function addLanguage($language_code) {
     // Check to make sure that language has not already been installed.
-    $this->drupalGet('admin/config/regional/language');
+    $this->backdropGet('admin/config/regional/language');
 
-    if (strpos($this->drupalGetContent(), 'enabled[' . $language_code . ']') === FALSE) {
+    if (strpos($this->backdropGetContent(), 'enabled[' . $language_code . ']') === FALSE) {
       // Doesn't have language installed so add it.
       $edit = array();
       $edit['langcode'] = $language_code;
       $this->backdropPost('admin/config/regional/language/add', $edit, t('Add language'));
 
       // Make sure we are not using a stale list.
-      drupal_static_reset('language_list');
+      backdrop_static_reset('language_list');
       $languages = language_list('language');
       $this->assertTrue(array_key_exists($language_code, $languages), t('Language was installed successfully.'));
 
@@ -1694,7 +1694,7 @@ class SimpleNewsI18nTestCase extends SimplenewsTestCase {
    * {@inheritdoc}
    */
   function testCategoryTranslation() {
-    $this->drupalLogin($this->admin_user);
+    $this->backdropLogin($this->admin_user);
     // Make Input Format "Filtered Text" translatable
     $edit = array(
       // The testing profile has no filtered_html mode.
@@ -1706,7 +1706,7 @@ class SimpleNewsI18nTestCase extends SimplenewsTestCase {
     $vocabulary = taxonomy_vocabulary_machine_name_load('newsletter');
     $vocabulary->i18n_mode = I18N_MODE_LOCALIZE;
     taxonomy_vocabulary_save($vocabulary);
-    drupal_static_reset('i18n_taxonomy_vocabulary_mode');
+    backdrop_static_reset('i18n_taxonomy_vocabulary_mode');
 
     // Refresh strings.
     // @todo: simplenews_category_save() should probably take care of this.
@@ -1724,11 +1724,11 @@ class SimpleNewsI18nTestCase extends SimplenewsTestCase {
     i18n_string_textgroup($textgroup)->update_translation($context, 'es', $es_description = $this->randomName());
 
     // Visit newsletter selection page in english.
-    $this->drupalGet('user/' . $this->admin_user->uid . '/edit/simplenews');
+    $this->backdropGet('user/' . $this->admin_user->uid . '/edit/simplenews');
     $this->assertText(t('Backdrop newsletter'));
 
     // And now in spanish.
-    $this->drupalGet('es/user/' . $this->admin_user->uid . '/edit/simplenews');
+    $this->backdropGet('es/user/' . $this->admin_user->uid . '/edit/simplenews');
     $this->assertText($es_name, t('Category name is translated.'));
   }
   /**
@@ -1749,7 +1749,7 @@ class SimpleNewsI18nTestCase extends SimplenewsTestCase {
     $vocabulary = taxonomy_vocabulary_machine_name_load('newsletter');
     $vocabulary->i18n_mode = I18N_MODE_LOCALIZE;
     taxonomy_vocabulary_save($vocabulary);
-    drupal_static_reset('i18n_taxonomy_vocabulary_mode');
+    backdrop_static_reset('i18n_taxonomy_vocabulary_mode');
 
     // Refresh strings.
     // @todo: simplenews_category_save() should probably take care of this.
@@ -1806,12 +1806,12 @@ class SimpleNewsI18nTestCase extends SimplenewsTestCase {
     $this->backdropPost(NULL, $edit, t('Submit'));
     simplenews_cron();
 
-    $this->assertEqual(3, count($this->drupalGetMails()));
+    $this->assertEqual(3, count($this->backdropGetMails()));
 
     $category = simplenews_category_load($this->getRandomNewsletter());
 
     $languages = language_list();
-    foreach ($this->drupalGetMails() as $mail) {
+    foreach ($this->backdropGetMails() as $mail) {
 
       if ($mail['to'] == $english_mail) {
         $this->assertEqual('en', $mail['language']);
@@ -1869,10 +1869,10 @@ class SimpleNewsI18nTestCase extends SimplenewsTestCase {
     $edit = array('language[enabled][locale-url]' => TRUE);
     $this->backdropPost('admin/config/regional/language/configure', $edit, t('Save settings'));
     $this->assertRaw(t('Language negotiation configuration saved.'), t('URL language detection enabled.'));
-    $this->drupalGet('admin/config/regional/language/configure');
+    $this->backdropGet('admin/config/regional/language/configure');
 
-    drupal_static_reset('locale_url_outbound_alter');
-    drupal_static_reset('language_list');
+    backdrop_static_reset('locale_url_outbound_alter');
+    backdrop_static_reset('language_list');
   }
 
 }
@@ -1921,22 +1921,22 @@ class SimpleNewsUpgradePathTestCase extends UpgradePathTestCase {
     module_load_include('module', 'simplenews');
     simplenews_subscribe_user($mail, $tid, FALSE);
 
-    $this->drupalGet('admin/config/services/simplenews');
+    $this->backdropGet('admin/config/services/simplenews');
     $this->assertText('Backdrop 6 newsletter');
     $this->assertText('Test');
 
-    $this->drupalGet('admin/people/simplenews');
+    $this->backdropGet('admin/people/simplenews');
     $this->assertText('another@example.org');
     $this->assertText($mail);
 
-    $this->drupalGet('admin/structure/taxonomy/newsletter');
+    $this->backdropGet('admin/structure/taxonomy/newsletter');
 
     // Check simplenews content type.
-    $this->drupalGet('admin/structure/types/manage/simplenews');
+    $this->backdropGet('admin/structure/types/manage/simplenews');
     $this->assertFieldChecked('edit-simplenews-content-type');
-    $this->drupalGet('admin/structure/types/manage/simplenews/fields');
+    $this->backdropGet('admin/structure/types/manage/simplenews/fields');
 
-    $this->drupalGet('node/add/simplenews');
+    $this->backdropGet('node/add/simplenews');
     $this->assertText('Newsletter');
     $this->assertText('Backdrop 6 newsletter');
 
@@ -1959,7 +1959,7 @@ class SimpleNewsUpgradePathTestCase extends UpgradePathTestCase {
     $this->assertEqual(1, db_query('SELECT tid FROM {simplenews_newsletter} WHERE nid = :nid', array(':nid' => 2))->fetchField(), 'There is an issue associated to the correct newsletter category');
 
 //    @todo Mails are not correctly returned
-//    $mails = $this->drupalGetMails();
+//    $mails = $this->backdropGetMails();
 //    debug($mails);
 //    $this->assertEqual('simplenews_test', $mails[0]['id']);
 //    $this->assertEqual('user@example.com', $mails[0]['to']);
@@ -1996,7 +1996,7 @@ class SimpleNewsUpgradePath61TestCase extends SimpleNewsUpgradePathTestCase {
   public function setUp() {
     // Path to the database dump files.
     $this->databaseDumpFiles = array(
-      drupal_get_path('module', 'simplenews') . '/tests/d6_simplenews_61.php',
+      backdrop_get_path('module', 'simplenews') . '/tests/d6_simplenews_61.php',
     );
     parent::setUp();
   }
@@ -2034,7 +2034,7 @@ class SimpleNewsUpgradePath62TestCase extends SimpleNewsUpgradePathTestCase {
   public function setUp() {
     // Path to the database dump files.
     $this->databaseDumpFiles = array(
-      drupal_get_path('module', 'simplenews') . '/tests/d6_simplenews_62.php',
+      backdrop_get_path('module', 'simplenews') . '/tests/d6_simplenews_62.php',
     );
     parent::setUp();
 
@@ -2076,8 +2076,8 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
   function setUp() {
     parent::setUp();
 
-    $this->user = $this->drupalCreateUser(array('administer newsletters', 'send newsletter', 'administer nodes', 'administer simplenews subscriptions', 'create simplenews content', 'edit any simplenews content', 'view own unpublished content', 'delete any simplenews content'));
-    $this->drupalLogin($this->user);
+    $this->user = $this->backdropCreateUser(array('administer newsletters', 'send newsletter', 'administer nodes', 'administer simplenews subscriptions', 'create simplenews content', 'edit any simplenews content', 'view own unpublished content', 'delete any simplenews content'));
+    $this->backdropLogin($this->user);
 
     // Subscribe a few users.
     $this->setUpSubscribers(5);
@@ -2107,7 +2107,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     simplenews_send_status_update();
 
     // Verify mails.
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual(5, count($mails), t('All mails were sent.'));
     foreach ($mails as $mail) {
       $this->assertEqual($mail['subject'], '[Backdrop newsletter] ' . $node->title, t('Mail has correct subject'));
@@ -2153,7 +2153,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     variable_set('simplenews_use_cron', FALSE);
 
     // Verify that the newsletter settings are shown.
-    $this->drupalGet('node/add/simplenews');
+    $this->backdropGet('node/add/simplenews');
     $this->assertText(t('Newsletter category'));
 
     $edit = array(
@@ -2180,7 +2180,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     $this->assertEqual(SIMPLENEWS_STATUS_SEND_READY, $newsletter->status, t('Newsletter sending finished'));
 
     // Verify mails.
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual(5, count($mails), t('All mails were sent.'));
     foreach ($mails as $mail) {
       $this->assertEqual($mail['subject'], '[Backdrop newsletter] ' . $edit['title'], t('Mail has correct subject'));
@@ -2203,7 +2203,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     // Verify that the newsletter settings are shown.
     $nodes = array();
     for ($i = 0; $i < 3; $i++) {
-      $this->drupalGet('node/add/simplenews');
+      $this->backdropGet('node/add/simplenews');
       $this->assertText(t('Newsletter category'));
 
       $edit = array(
@@ -2242,7 +2242,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     $this->assertEqual(SIMPLENEWS_STATUS_SEND_PUBLISH, $newsletter->status, t('Newsletter set to send on publish'));
 
     // Verify mails.
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual(5, count($mails), t('All mails were sent.'));
     foreach ($mails as $mail) {
       $this->assertEqual($mail['subject'], '[Backdrop newsletter] ' . $first->title, t('Mail has correct subject'));
@@ -2260,7 +2260,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     variable_set('simplenews_throttle', 3);
 
     // Verify that the newsletter settings are shown.
-    $this->drupalGet('node/add/simplenews');
+    $this->backdropGet('node/add/simplenews');
     $this->assertText(t('Newsletter category'));
 
     $edit = array(
@@ -2287,7 +2287,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     $this->assertEqual(SIMPLENEWS_STATUS_SEND_PENDING, $newsletter->status, t('Newsletter sending pending.'));
 
     // Verify that no mails have been sent yet.
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual(0, count($mails), t('No mails were sent yet.'));
 
     $spooled = db_query('SELECT COUNT(*) FROM {simplenews_mail_spool} WHERE nid = :nid', array(':nid' => $node->nid))->fetchField();
@@ -2316,7 +2316,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     $this->assertEqual(0, $spooled, t('No mails remaining in spool.'));
 
     // Verify mails.
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual(5, count($mails), t('All mails were sent.'));
     foreach ($mails as $mail) {
       $this->assertEqual($mail['subject'], '[Backdrop newsletter] ' . $edit['title'], t('Mail has correct subject'));
@@ -2334,7 +2334,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
   function testSendNowCron() {
 
     // Verify that the newsletter settings are shown.
-    $this->drupalGet('node/add/simplenews');
+    $this->backdropGet('node/add/simplenews');
     $this->assertText(t('Newsletter category'));
 
     $edit = array(
@@ -2366,7 +2366,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     $this->assertEqual(SIMPLENEWS_STATUS_SEND_PENDING, $newsletter->status, t('Newsletter sending pending.'));
 
     // Verify that no mails have been sent yet.
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual(0, count($mails), t('No mails were sent yet.'));
 
     $spooled = db_query('SELECT COUNT(*) FROM {simplenews_mail_spool} WHERE nid = :nid', array(':nid' => $node->nid))->fetchField();
@@ -2388,7 +2388,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     $this->assertEqual(0, $spooled, t('No mails remaining in spool.'));
 
     // Verify mails.
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual(5, count($mails), t('All mails were sent.'));
     foreach ($mails as $mail) {
       $this->assertEqual($mail['subject'], '[Backdrop newsletter] ' . $edit['title'], t('Mail has correct subject'));
@@ -2406,7 +2406,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     variable_set('simplenews_use_cron', FALSE);
 
     // Verify that the newsletter settings are shown.
-    $this->drupalGet('node/add/simplenews');
+    $this->backdropGet('node/add/simplenews');
     $this->assertText(t('Newsletter category'));
 
     $edit = array(
@@ -2446,7 +2446,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     $this->assertEqual(SIMPLENEWS_STATUS_SEND_READY, $newsletter->status, t('Newsletter sending finished'));
     // @todo test sent subscriber count.
     // Verify mails.
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual(5, count($mails), t('All mails were sent.'));
     foreach ($mails as $mail) {
       $this->assertEqual($mail['subject'], '[Backdrop newsletter] ' . $edit['title'], t('Mail has correct subject'));
@@ -2458,7 +2458,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
 
   function testUpdateNewsletter() {
     // Create a second category.
-    $this->drupalGet('admin/config/services/simplenews');
+    $this->backdropGet('admin/config/services/simplenews');
     $this->clickLink(t('Add newsletter category'));
     $edit = array(
       'name' => $this->randomName(),
@@ -2466,7 +2466,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     );
     $this->backdropPost(NULL, $edit, t('Save'));
 
-    $this->drupalGet('node/add/simplenews');
+    $this->backdropGet('node/add/simplenews');
     $this->assertText(t('Newsletter category'));
 
     $edit = array(
@@ -2500,7 +2500,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
    */
   function testDelete() {
     // Verify that the newsletter settings are shown.
-    $this->drupalGet('node/add/simplenews');
+    $this->backdropGet('node/add/simplenews');
     $this->assertText(t('Newsletter category'));
 
     // Prevent deleting the mail spool entries automatically.
@@ -2548,7 +2548,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     $this->assertEqual(5, $spooled, t('Mails are kept in simplenews_mail_spool after being sent.'));
 
     // Verify mails.
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual(5, count($mails), t('All mails were sent.'));
     foreach ($mails as $mail) {
       $this->assertEqual($mail['subject'], '[Backdrop newsletter] ' . $edit['title'], t('Mail has correct subject'));
@@ -2567,7 +2567,7 @@ class SimplenewsSendTestCase extends SimplenewsTestCase {
     // Verify that kept mail spool rows are not re-sent.
     simplenews_cron();
     simplenews_get_spool();
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $this->assertEqual(5, count($mails), t('No additional mails have been sent.'));
 
     // Now delete.
@@ -2639,8 +2639,8 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
     // Refresh permissions.
     $this->checkPermissions(array(), TRUE);
 
-    $this->user = $this->drupalCreateUser(array('administer newsletters', 'send newsletter', 'administer nodes', 'administer simplenews subscriptions', 'create simplenews content', 'edit any simplenews content', 'view own unpublished content', 'delete any simplenews content', 'administer simplenews settings', filter_permission_name($filtered_html_format)));
-    $this->drupalLogin($this->user);
+    $this->user = $this->backdropCreateUser(array('administer newsletters', 'send newsletter', 'administer nodes', 'administer simplenews subscriptions', 'create simplenews content', 'edit any simplenews content', 'view own unpublished content', 'delete any simplenews content', 'administer simplenews settings', filter_permission_name($filtered_html_format)));
+    $this->backdropLogin($this->user);
   }
 
   /**
@@ -2650,7 +2650,7 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
     // Create a basic plaintext test source and send it.
     $plain_source = new SimplenewsSourceTest('plain');
     simplenews_send_source($plain_source);
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $mail = $mails[0];
 
     // Assert resulting mail.
@@ -2671,7 +2671,7 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
 
     $html_source = new SimplenewsSourceTest('html');
     simplenews_send_source($html_source);
-    $mails = $this->drupalGetMails();
+    $mails = $this->backdropGetMails();
     $mail = $mails[1];
 
     // Assert resulting mail.
@@ -2726,11 +2726,11 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
     $after = microtime(TRUE);
 
     // Make sure that 99 mails have been sent.
-    $this->assertEqual(99, count($this->drupalGetMails()));
+    $this->assertEqual(99, count($this->backdropGetMails()));
 
     // Test that tokens are correctly replaced.
     $tid = $this->getRandomNewsletter();
-    foreach (array_slice($this->drupalGetMails(), 0, 3) as $mail) {
+    foreach (array_slice($this->backdropGetMails(), 0, 3) as $mail) {
       // Make sure that the same mail was used in the body token as it has been
       // sent to. Also verify that the mail is plaintext.
       $this->assertTrue(strpos($mail['body'], '*' . $mail['to'] . '*') !== FALSE);
@@ -2760,7 +2760,7 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
     variable_set('mail_system', array('default-system' => 'SimplenewsHTMLTestingMailSystem'));
 
     // Set the format to HTML.
-    $this->drupalGet('admin/config/services/simplenews');
+    $this->backdropGet('admin/config/services/simplenews');
     $this->clickLink(t('edit newsletter category'));
     $edit_category = array(
       'format' => 'html',
@@ -2788,10 +2788,10 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
     simplenews_mail_spool();
 
     // Make sure that 5 mails have been sent.
-    $this->assertEqual(5, count($this->drupalGetMails()));
+    $this->assertEqual(5, count($this->backdropGetMails()));
 
     // Test that tokens are correctly replaced.
-    foreach (array_slice($this->drupalGetMails(), 0, 3) as $mail) {
+    foreach (array_slice($this->backdropGetMails(), 0, 3) as $mail) {
       // Verify title.
       $this->assertTrue(strpos($mail['body'], '<h2>' . $node->title . '</h2>') !== FALSE);
 
@@ -2831,7 +2831,7 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
     $this->setUpSubscribers(5);
 
     // Set the format to HTML.
-    $this->drupalGet('admin/config/services/simplenews');
+    $this->backdropGet('admin/config/services/simplenews');
     $this->clickLink(t('edit newsletter category'));
     $edit = array(
       'opt_inout' => 'hidden',
@@ -2854,10 +2854,10 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
     simplenews_mail_spool();
 
     // Make sure that 5 mails have been sent.
-    $this->assertEqual(5, count($this->drupalGetMails()));
+    $this->assertEqual(5, count($this->backdropGetMails()));
 
     // Test that tokens are correctly replaced.
-    foreach (array_slice($this->drupalGetMails(), 0, 3) as $mail) {
+    foreach (array_slice($this->backdropGetMails(), 0, 3) as $mail) {
       // Verify the footer is not displayed for hidden newsletters.
       $this->assertFalse(strpos($mail['body'], t('Unsubscribe from this newsletter')));
     }
@@ -2890,10 +2890,10 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
     $after = microtime(TRUE);
 
     // Make sure that 100 mails have been sent.
-    $this->assertEqual(100, count($this->drupalGetMails()));
+    $this->assertEqual(100, count($this->backdropGetMails()));
 
     // Test that tokens are correctly replaced.
-    foreach (array_slice($this->drupalGetMails(), 0, 3) as $mail) {
+    foreach (array_slice($this->backdropGetMails(), 0, 3) as $mail) {
       // Make sure that the same mail was used in the body token as it has been
       // sent to. Also verify that the mail is plaintext.
       $this->assertTrue(strpos($mail['body'], '*' . $mail['to'] . '*') !== FALSE);
@@ -2935,7 +2935,7 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
     simplenews_mail_spool();
 
     // Make sure that no mails have been sent.
-    $this->assertEqual(0, count($this->drupalGetMails()));
+    $this->assertEqual(0, count($this->backdropGetMails()));
 
     $spool_row = db_query('SELECT * FROM {simplenews_mail_spool}')->fetchObject();
     $this->assertEqual(SIMPLENEWS_SPOOL_DONE, $spool_row->status);
@@ -2965,7 +2965,7 @@ class SimplenewsSourceTestCase extends SimplenewsTestCase {
     simplenews_mail_spool();
 
     // Make sure that no mails have been sent.
-    $this->assertEqual(0, count($this->drupalGetMails()));
+    $this->assertEqual(0, count($this->backdropGetMails()));
 
     $spool_row = db_query('SELECT * FROM {simplenews_mail_spool}')->fetchObject();
     $this->assertEqual(SIMPLENEWS_SPOOL_DONE, $spool_row->status);

@@ -1424,7 +1424,7 @@ function simplenews_admin_settings_mail($form, &$form_state) {
   $form['simplenews_mail_backend']['simplenews_source_cache'] = array(
     '#type' => 'select',
     '#title' => t('Cache'),
-    '#description' => t('Chosing a different cache implementation allows for a different behavior during sending mails.') . '<br /><br />' . $sources_descriptions,
+    '#description' => t('Choosing a different cache implementation allows for a different behavior during sending mails.') . '<br /><br />' . $sources_descriptions,
     '#options' => $sources_labels,
     '#default_value' => $config->get('simplenews_source_cache'),
   );
