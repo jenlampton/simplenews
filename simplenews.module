@@ -434,7 +434,7 @@ function simplenews_newsletter_defaults($node = NULL) {
   if ($node) {
     $newsletter['nid'] = isset($node->nid) ? $node->nid : NULL;
     $terms = simplenews_get_term_values($node);
-    $newsletter['tid'] = $terms[0]['tid'];
+    $newsletter['tid'] = isset($terms[0]['tid']) ? $terms[0]['tid'] : NULL;
   }
 
   return $newsletter;

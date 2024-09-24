@@ -1900,14 +1900,21 @@ function simplenews_get_priority() {
  * Menu callback; Newsletter tab page.
  */
 function simplenews_node_tab_page($node) {
-  backdrop_set_title(t('<em>Newsletter</em> @title', array('@title' => $node->title)), PASS_THROUGH);
-  return backdrop_get_form('simplenews_node_tab_send_form', $node);
+  if (!empty($node->simplenews->tid)) {
+    backdrop_set_title(t('<em>Newsletter</em> @title', array('@title' => $node->title)), PASS_THROUGH);
+    return backdrop_get_form('simplenews_node_tab_send_form', $node);
+  }
+  else {
+    backdrop_set_message(t('No newsletters have been selected for this page. Please choose one to proceed.'), 'warning');
+    backdrop_goto('/node/' . $node->nid . '/edit', array('query' => array('destination' => '/node/' . $node->nid . '/simplenews')));
+  }
 }
 
 /**
  * @todo
  */
 function simplenews_node_tab_send_form($form, &$form_state, $node) {
+
   $config = config('simplenews.settings');
   // First check if there already is a loaded simplenews object.
   if (!empty($node->simplenews)) {
@@ -1946,7 +1953,7 @@ function simplenews_node_tab_send_form($form, &$form_state, $node) {
     // Move the category in here and give the user feedback.
   }
   else {
-    // Show newsletter sending options if newsletter has not been send yet.
+    // Show newsletter sending options if newsletter has not been sent yet.
     // If send a notification is shown.
     if ($simplenews_values->status == SIMPLENEWS_STATUS_SEND_NOT || $simplenews_values->status == SIMPLENEWS_STATUS_SEND_PUBLISH) {
 
