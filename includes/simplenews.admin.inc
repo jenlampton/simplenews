@@ -1306,6 +1306,11 @@ function simplenews_admin_settings_newsletter($form, &$form_state) {
   $config = config('simplenews.settings');
   $form = array();
   $form['#config'] = 'simplenews.settings';
+
+  $form['markup'] = array(
+    '#markup' => '<ul class="action-links"><li><a href="/admin/people/simplenews">Manage newsletter subscriptions</a></li></ul>',
+  );
+
   $form['simplenews_default_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Default newsletter options'),
@@ -1407,6 +1412,10 @@ function simplenews_admin_settings_mail($form, &$form_state) {
   $form = array();
   $form['#config'] = 'simplenews.settings';
 
+  $form['markup'] = array(
+    '#markup' => '<ul class="action-links"><li><a href="/admin/people/simplenews">Manage newsletter subscriptions</a></li></ul>',
+  );
+
   $form['simplenews_mail_backend']['simplenews_use_cron'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use cron to send newsletters'),
@@ -1471,9 +1480,12 @@ function simplenews_admin_settings_mail($form, &$form_state) {
  */
 function simplenews_admin_settings_subscription($form, &$form_state) {
   $config = config('simplenews.settings');
-  $address_default = config_get('system.core', 'site_mail');
   $form = array();
   $form['#config'] = 'simplenews.settings';
+
+  $form['markup'] = array(
+    '#markup' => '<ul class="action-links"><li><a href="/admin/people/simplenews">Manage newsletter subscriptions</a></li></ul>',
+  );
 
   $form['account'] = array(
     '#type' => 'fieldset',
