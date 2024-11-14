@@ -613,7 +613,7 @@ function simplenews_confirm_subscription() {
           $path = $path . '/' . implode('/', $arguments);
           backdrop_goto($path);
         }
-        backdrop_set_message(t('%user was added to the %newsletter mailing list.', array('%user' => $subscriber->mail, '%newsletter' => _simplenews_newsletter_name($category))));
+        backdrop_set_message(t('%user has been successfully added to the %newsletter mailing list.', array('%user' => $subscriber->mail, '%newsletter' => _simplenews_newsletter_name($category))));
         backdrop_goto(config_get('system.core', 'site_frontpage'));
       }
       elseif ($op == 'combined') {
@@ -680,7 +680,7 @@ function simplenews_confirm_add_form_submit($form, &$form_state) {
 
   if (!$path = $config->get('simplenews_confirm_subscribe_page')) {
     $path = config_get('system.core', 'site_frontpage');
-    backdrop_set_message(t('%user was added to the %newsletter mailing list.', array('%user' => $form_state['values']['mail'], '%newsletter' => _simplenews_newsletter_name($form_state['values']['newsletter']))));
+    backdrop_set_message(t('%user has been successfully added to the %newsletter mailing list.', array('%user' => $form_state['values']['mail'], '%newsletter' => _simplenews_newsletter_name($form_state['values']['newsletter']))));
   }
 
   $form_state['redirect'] = $path;
