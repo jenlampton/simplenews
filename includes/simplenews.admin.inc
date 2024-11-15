@@ -1929,6 +1929,18 @@ function simplenews_node_tab_page($node) {
 function simplenews_node_tab_send_form($form, &$form_state, $node) {
 
   $config = config('simplenews.settings');
+
+  // Make sure a term is loaded and it is of newsletter category.
+  $simplenews_term = taxonomy_term_load($node->field_simplenews_term[LANGUAGE_NONE][0]['tid']);
+  if (empty($simplenews_term)) {
+    backdrop_set_message(t('No newsletters have been selected for this page. Please choose one to proceed.'), 'error');
+    backdrop_goto('/node/' . $node->nid . '/edit');
+  }
+  elseif ($simplenews_term->vocabulary =! 'newsletter') {
+    backdrop_set_message(t('Category selected for this page is not a newsletter category. Please choose a newsletter category.'), 'error');
+    backdrop_goto('/node/' . $node->nid . '/edit');
+  }
+
   // First check if there already is a loaded simplenews object.
   if (!empty($node->simplenews)) {
     $simplenews_values = $node->simplenews;
