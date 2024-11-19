@@ -464,7 +464,7 @@ function simplenews_admin_category_form($form, &$form_state, $edit = array()) {
     '#required' => TRUE,
   );
   $form['description'] = array(
-    '#type' => 'textfield',
+    '#type' => 'textarea',
     '#title' => t('Description'),
     '#default_value' => $edit['description'],
   );
