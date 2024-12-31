@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Install, update and uninstall functions for the simplenews module
@@ -386,6 +385,21 @@ function simplenews_uninstall() {
   db_delete('simplenews_category');
   db_delete('simplenews_subscription');
   db_delete('simplenews_subscriber');
+}
+
+/**
+ * Convert variables to config.
+ */
+function simplenews_update_1000() {
+  $config = config('simplenews.settings');
+  $query = "SELECT name FROM {variable} WHERE name LIKE 'simplenews_%%'";
+  $names = db_query($query)->fetchAllAssoc('name', PDO::FETCH_ASSOC);
+  foreach ($names as $name => $garbage) {
+    $value = update_variable_get($name);
+    $config->set($name, $value);
+    update_variable_del($name);
+  }
+  $config->save();
 }
 
 /**
